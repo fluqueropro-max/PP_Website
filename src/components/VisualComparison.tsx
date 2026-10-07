@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Columns, Sliders, Maximize2, Minimize2, Sparkles, AlertTriangle, Upload, Eye } from 'lucide-react';
+import { Columns, Sliders, Maximize2, Minimize2, Sparkles, AlertTriangle, Upload, Eye, ZoomOut, ZoomIn } from 'lucide-react';
 import { LocationViewAngle } from '../types';
 
 interface VisualComparisonProps {
@@ -37,6 +37,8 @@ export const VisualComparison: React.FC<VisualComparisonProps> = ({
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const [displayMode, setDisplayMode] = useState<'slider' | 'side-by-side'>('slider');
+  const [fitMode, setFitMode] = useState<'fit' | 'fill'>('fit');
+  const [aspectRatio, setAspectRatio] = useState<number>(4 / 3);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [beforeError, setBeforeError] = useState(false);
   const [afterError, setAfterError] = useState(false);
@@ -68,6 +70,19 @@ export const VisualComparison: React.FC<VisualComparisonProps> = ({
     setCustomBefore(null);
     setCustomAfter(null);
   }, [activeViewId]);
+
+  // Dynamically compute exact aspect ratio of loaded images to prevent any cropping/zooming
+  useEffect(() => {
+    const src = activeAfter || activeBefore;
+    if (!src) return;
+    const img = new Image();
+    img.src = src;
+    img.onload = () => {
+      if (img.naturalWidth && img.naturalHeight) {
+        setAspectRatio(img.naturalWidth / img.naturalHeight);
+      }
+    };
+  }, [activeBefore, activeAfter]);
 
   const handleMove = useCallback((clientX: number) => {
     if (!containerRef.current) return;
@@ -207,6 +222,25 @@ export const VisualComparison: React.FC<VisualComparisonProps> = ({
             </button>
           </div>
 
+          {/* Fit / Full View Toggle Button */}
+          <button
+            onClick={() => setFitMode(fitMode === 'fit' ? 'fill' : 'fit')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200/80 text-neutral-800 text-xs font-medium transition-colors border border-neutral-200/80"
+            title={fitMode === 'fit' ? 'Passer en mode Remplir le cadre (Zoomé)' : 'Passer en mode Plein cadre (Dézoomé au max, non-rogné)'}
+          >
+            {fitMode === 'fit' ? (
+              <>
+                <ZoomOut className="w-3.5 h-3.5 text-resilient-600" />
+                <span className="hidden sm:inline">Plein cadre (Dézoomé)</span>
+              </>
+            ) : (
+              <>
+                <ZoomIn className="w-3.5 h-3.5 text-neutral-600" />
+                <span className="hidden sm:inline">Remplir cadre</span>
+              </>
+            )}
+          </button>
+
           <label className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200/80 text-neutral-800 text-xs font-medium cursor-pointer transition-colors border border-neutral-200/80">
             <Upload className="w-3.5 h-3.5 text-neutral-600" />
             <span className="hidden sm:inline">Load JPEGs</span>
@@ -243,7 +277,17 @@ export const VisualComparison: React.FC<VisualComparisonProps> = ({
             setIsDragging(true);
             handleMove(e.touches[0].clientX);
           }}
-          className="relative w-full h-[440px] sm:h-[560px] lg:h-[640px] rounded-3xl overflow-hidden border border-neutral-200/90 shadow-card select-none cursor-ew-resize focus:outline-none focus:ring-2 focus:ring-neutral-400 bg-neutral-900"
+          style={
+            fitMode === 'fit'
+              ? {
+                  aspectRatio: `${aspectRatio}`,
+                  maxWidth: `min(100%, calc(${isFullscreen ? '88vh' : '78vh'} * ${aspectRatio}))`,
+                }
+              : undefined
+          }
+          className={`relative w-full rounded-3xl overflow-hidden border border-neutral-200/90 shadow-card select-none cursor-ew-resize focus:outline-none focus:ring-2 focus:ring-neutral-400 bg-neutral-950 mx-auto transition-all ${
+            fitMode === 'fill' ? 'h-[440px] sm:h-[560px] lg:h-[640px]' : ''
+          }`}
         >
           {/* AFTER IMAGE (Adapted Vision) - Bottom Layer */}
           <div className="absolute inset-0 w-full h-full">
@@ -254,11 +298,15 @@ export const VisualComparison: React.FC<VisualComparisonProps> = ({
                 src={activeAfter}
                 alt={activeAfterLabel}
                 onError={() => setAfterError(true)}
-                className="w-full h-full object-cover object-center pointer-events-none"
+                decoding="async"
+                loading="eager"
+                className={`w-full h-full pointer-events-none select-none transition-all ${
+                  fitMode === 'fit' ? 'object-contain object-center' : 'object-cover object-center'
+                }`}
               />
             )}
             {/* Green floating tag */}
-            <div className="absolute bottom-5 right-5 glass-pill px-4 py-2 rounded-full text-xs font-semibold text-emerald-800 flex items-center gap-1.5 shadow-md">
+            <div className="absolute bottom-4 right-4 glass-pill px-3.5 py-1.5 rounded-full text-xs font-semibold text-emerald-800 flex items-center gap-1.5 shadow-md">
               <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
               <span>{activeAfterLabel}</span>
             </div>
@@ -276,11 +324,15 @@ export const VisualComparison: React.FC<VisualComparisonProps> = ({
                 src={activeBefore}
                 alt={activeBeforeLabel}
                 onError={() => setBeforeError(true)}
-                className="w-full h-full object-cover object-center pointer-events-none"
+                decoding="async"
+                loading="eager"
+                className={`w-full h-full pointer-events-none select-none transition-all ${
+                  fitMode === 'fit' ? 'object-contain object-center' : 'object-cover object-center'
+                }`}
               />
             )}
             {/* Amber floating tag */}
-            <div className="absolute bottom-5 left-5 glass-pill px-4 py-2 rounded-full text-xs font-semibold text-amber-800 flex items-center gap-1.5 shadow-md">
+            <div className="absolute bottom-4 left-4 glass-pill px-3.5 py-1.5 rounded-full text-xs font-semibold text-amber-800 flex items-center gap-1.5 shadow-md">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
               <span>{activeBeforeLabel}</span>
             </div>
@@ -302,32 +354,56 @@ export const VisualComparison: React.FC<VisualComparisonProps> = ({
           </div>
 
           {/* Top Instruction Pill */}
-          <div className="absolute top-5 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full glass-pill text-neutral-600 text-xs font-medium pointer-events-none shadow-sm">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full glass-pill text-neutral-600 text-xs font-medium pointer-events-none shadow-sm">
             Slide to compare {currentView?.name || 'before & after'}
           </div>
         </div>
       ) : (
         /* Side-by-Side Mode */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="relative h-[340px] md:h-[480px] rounded-3xl overflow-hidden border border-neutral-200 shadow-card bg-neutral-900">
+          <div
+            style={fitMode === 'fit' ? { aspectRatio: `${aspectRatio}` } : undefined}
+            className={`relative rounded-3xl overflow-hidden border border-neutral-200 shadow-card bg-neutral-950 ${
+              fitMode === 'fill' ? 'h-[340px] md:h-[480px]' : 'w-full'
+            }`}
+          >
             {beforeError ? (
               <FallbackCurrentArchitecturalGraphic locationName={locationName} />
             ) : (
-              <img src={activeBefore} alt={activeBeforeLabel} onError={() => setBeforeError(true)} className="w-full h-full object-cover" />
+              <img
+                src={activeBefore}
+                alt={activeBeforeLabel}
+                onError={() => setBeforeError(true)}
+                decoding="async"
+                loading="eager"
+                className={`w-full h-full ${fitMode === 'fit' ? 'object-contain' : 'object-cover'}`}
+              />
             )}
-            <div className="absolute bottom-4 left-4 glass-pill px-4 py-2 rounded-full text-xs font-semibold text-amber-800 flex items-center gap-1.5 shadow-md">
+            <div className="absolute bottom-4 left-4 glass-pill px-3.5 py-1.5 rounded-full text-xs font-semibold text-amber-800 flex items-center gap-1.5 shadow-md">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
               <span>{activeBeforeLabel}</span>
             </div>
           </div>
 
-          <div className="relative h-[340px] md:h-[480px] rounded-3xl overflow-hidden border border-neutral-200 shadow-card bg-neutral-900">
+          <div
+            style={fitMode === 'fit' ? { aspectRatio: `${aspectRatio}` } : undefined}
+            className={`relative rounded-3xl overflow-hidden border border-neutral-200 shadow-card bg-neutral-950 ${
+              fitMode === 'fill' ? 'h-[340px] md:h-[480px]' : 'w-full'
+            }`}
+          >
             {afterError ? (
               <FallbackAdaptedArchitecturalGraphic locationName={locationName} />
             ) : (
-              <img src={activeAfter} alt={activeAfterLabel} onError={() => setAfterError(true)} className="w-full h-full object-cover" />
+              <img
+                src={activeAfter}
+                alt={activeAfterLabel}
+                onError={() => setAfterError(true)}
+                decoding="async"
+                loading="eager"
+                className={`w-full h-full ${fitMode === 'fit' ? 'object-contain' : 'object-cover'}`}
+              />
             )}
-            <div className="absolute bottom-4 right-4 glass-pill px-4 py-2 rounded-full text-xs font-semibold text-emerald-800 flex items-center gap-1.5 shadow-md">
+            <div className="absolute bottom-4 right-4 glass-pill px-3.5 py-1.5 rounded-full text-xs font-semibold text-emerald-800 flex items-center gap-1.5 shadow-md">
               <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
               <span>{activeAfterLabel}</span>
             </div>
