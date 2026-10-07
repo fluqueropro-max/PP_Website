@@ -90,7 +90,7 @@ export const App: React.FC = () => {
                 <div className="flex items-center gap-4 text-xs font-medium text-neutral-600">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-neutral-900" />
-                    <span>4 Showcases: Cornavin, Plainpalais, Rive & Les Pâquis</span>
+                    <span>5 Showcases: Cornavin, Plainpalais, Rive, Les Pâquis & Campus des Nations</span>
                   </span>
                 </div>
               </div>
@@ -166,15 +166,25 @@ export const App: React.FC = () => {
                         {/* Quick Metrics */}
                         <div className="grid grid-cols-2 gap-3 pt-2">
                           <div className="bg-neutral-50 p-3 rounded-2xl border border-neutral-100">
-                            <span className="text-[10px] font-medium text-neutral-500 block">Peak Surface</span>
+                            <span className="text-[10px] font-medium text-neutral-500 block truncate" title={loc.metrics[0].label}>
+                              {loc.metrics[0].label}
+                            </span>
                             <span className="text-xs font-bold text-neutral-900 font-mono">
-                              {loc.metrics[0].adaptedValue}°C <span className="text-[10px] text-neutral-400 font-normal">({loc.metrics[0].currentValue}°C)</span>
+                              {loc.metrics[0].adaptedValue}{loc.metrics[0].unit.startsWith('°') ? loc.metrics[0].unit.split(' ')[0] : ` ${loc.metrics[0].unit}`}{' '}
+                              <span className="text-[10px] text-neutral-400 font-normal">
+                                ({loc.metrics[0].currentValue}{loc.metrics[0].unit.startsWith('°') ? loc.metrics[0].unit.split(' ')[0] : ''})
+                              </span>
                             </span>
                           </div>
                           <div className="bg-neutral-50 p-3 rounded-2xl border border-neutral-100">
-                            <span className="text-[10px] font-medium text-neutral-500 block">Water Capture</span>
-                            <span className="text-xs font-bold text-cyan-700 font-mono">
-                              {loc.metrics[1].adaptedValue}% <span className="text-[10px] text-neutral-400 font-normal">({loc.metrics[1].currentValue}%)</span>
+                            <span className="text-[10px] font-medium text-neutral-500 block truncate" title={loc.metrics[1].label}>
+                              {loc.metrics[1].label}
+                            </span>
+                            <span className="text-xs font-bold text-resilient-800 font-mono">
+                              {loc.metrics[1].adaptedValue}{loc.metrics[1].unit.startsWith('°') ? loc.metrics[1].unit.split(' ')[0] : ` ${loc.metrics[1].unit}`}{' '}
+                              <span className="text-[10px] text-neutral-400 font-normal">
+                                ({loc.metrics[1].currentValue}{loc.metrics[1].unit.startsWith('°') ? loc.metrics[1].unit.split(' ')[0] : ''})
+                              </span>
                             </span>
                           </div>
                         </div>

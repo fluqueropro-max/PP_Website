@@ -49,6 +49,7 @@ export interface GenevaLocation {
   summary: string;
   currentProblemSummary: string;
   adaptationVisionSummary: string;
+  sources?: string[];
   beforeImage: string;
   afterImage: string;
   beforeLabel?: string;

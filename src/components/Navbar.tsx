@@ -19,7 +19,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="fixed top-4 sm:top-6 left-0 right-0 z-40 px-4 pointer-events-none flex justify-center">
-      <div className="w-full max-w-4xl pointer-events-auto">
+      <div className="w-full max-w-5xl pointer-events-auto">
         {/* Main Floating Capsule Pill Bar - exactly matching the reference image */}
         <div className="glass-pill rounded-full py-2.5 px-4 sm:px-6 flex items-center justify-between gap-3 sm:gap-6 transition-all duration-300">
           
@@ -34,7 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* Navigation Links in Center (Desktop) */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+          <nav className="hidden md:flex items-center gap-4 lg:gap-5 text-xs lg:text-sm font-medium">
             <button
               onClick={() => onSelectLocation(null)}
               className={`transition-colors ${
@@ -48,15 +48,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {locations.map((loc) => {
               const isSelected = selectedLocation?.id === loc.id;
-              const shortName = loc.name
+              let shortName = loc.name
                 .replace('Gare de Genève-', '')
-                .replace('Plaine de ', '');
+                .replace('Plaine de ', '')
+                .replace('Rond-point de ', '');
+              if (loc.id === 'ecolint-campus-nations' || loc.name.includes('Campus des Nations')) {
+                shortName = 'Campus des Nations';
+              }
 
               return (
                 <button
                   key={loc.id}
                   onClick={() => onSelectLocation(loc)}
-                  className={`transition-colors flex items-center gap-1.5 ${
+                  className={`transition-colors flex items-center gap-1.5 whitespace-nowrap ${
                     isSelected
                       ? 'text-neutral-950 font-bold'
                       : 'text-neutral-500 hover:text-neutral-900'
@@ -126,27 +130,30 @@ export const Navbar: React.FC<NavbarProps> = ({
               Overview Map
             </button>
 
-            {locations.map((loc) => (
-              <button
-                key={loc.id}
-                onClick={() => {
-                  onSelectLocation(loc);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium flex items-center justify-between ${
-                  selectedLocation?.id === loc.id
-                    ? 'bg-neutral-100 text-neutral-950 font-bold'
-                    : 'text-neutral-600'
-                }`}
-              >
-                <span>{loc.name}</span>
-                {loc.status === 'active' && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-resilient-100 text-resilient-700 font-semibold">
-                    Live
-                  </span>
-                )}
-              </button>
-            ))}
+            {locations.map((loc) => {
+              const displayName = loc.id === 'ecolint-campus-nations' ? 'Campus des Nations' : loc.name;
+              return (
+                <button
+                  key={loc.id}
+                  onClick={() => {
+                    onSelectLocation(loc);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium flex items-center justify-between ${
+                    selectedLocation?.id === loc.id
+                      ? 'bg-neutral-100 text-neutral-950 font-bold'
+                      : 'text-neutral-600'
+                  }`}
+                >
+                  <span>{displayName}</span>
+                  {loc.status === 'active' && (
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-resilient-100 text-resilient-700 font-semibold">
+                      Live
+                    </span>
+                  )}
+                </button>
+              );
+            })}
 
             <button
               onClick={() => {
