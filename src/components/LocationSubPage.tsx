@@ -120,7 +120,7 @@ export const LocationSubPage: React.FC<LocationSubPageProps> = ({
                 <span className="text-xs text-neutral-400 font-mono">IB Personal Project</span>
               </div>
               <h3 className="text-xl sm:text-2xl font-bold font-display text-white tracking-tight">
-                Shape Our Resilient Courtyard — Upcoming Student Feedback Survey
+                Help Shape Our School Courtyard — Student Feedback Survey Now Open
               </h3>
               <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
                 We are gathering first-hand feedback from Campus des Nations students to prioritize shade structures, seating pergolas, and hydration stations. Have your voice heard in this IB research project!
@@ -138,7 +138,7 @@ export const LocationSubPage: React.FC<LocationSubPageProps> = ({
                 }}
                 className="group px-6 py-3.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-neutral-950 font-bold text-xs sm:text-sm transition-all shadow-lg hover:shadow-emerald-500/25 flex items-center gap-2 active:scale-95 whitespace-nowrap"
               >
-                <span>Participate in Survey</span>
+                <span>Take the Survey →</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </button>
             </div>
